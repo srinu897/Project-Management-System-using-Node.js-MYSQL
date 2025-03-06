@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background: radial-gradient(circle, rgba(139, 69, 19, 0.8), rgba(210, 105, 30, 0.8)); /* Brown and Chocolate gradient */
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            color: black;
+        }
+        h2, h3 {
+            text-align: center;
+            color: Grays;
+        }
+        .nav {
+            padding: 10px;
+        }
+        .nav-link {
+            font-weight: bold;
+            padding: 10px 15px;
+            border-radius: 5px;
+            color: white !important;
+            background-color: brown;
+            text-decoration: none;
+        }
+        .nav-link:hover {
+            opacity: 0.8;
+        }
+        .input-group input, .input-group select {
+            border-radius: 5px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        table {
+            background-color: white;
+            color: black;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-danger {
+            background-color: red;
+            border: none;
+        }
+        .btn-danger:hover {
+            background-color: darkred;
+        }
+        footer {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #222;
+            color: white;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body class="container mt-4">
+    <header class="text-center mb-4">
+        <h2>Project Dashboard</h2>
+        <nav class="nav justify-content-center">
+            <a class="nav-link" href="task.html">Task Management</a>
+            <a class="nav-link" href="upload_document.html">Upload Documents</a>
+            <a class="nav-link" href="about.html">About</a>
+        </nav>
+    </header>
+
+    <!-- Add Project Section -->
+    <section>
+        <h3>Add Project</h3>
+        <form id="projectForm" class="mb-3">
+            <div class="input-group mb-2">
+                <input type="text" id="name" class="form-control" placeholder="Project Name" required>
+                <input type="text" id="description" class="form-control" placeholder="Project Description" required>
+                <select id="status" class="form-select">
+                    <option value="Pending">Pending</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Completed">Completed</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Add Project</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- All Projects -->
+    <section>
+        <h3>All Projects</h3>
+        <table class="table table-bordered text-center">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="projectTable"></tbody>
+        </table>
+    </section>
+
+    <footer class="text-center mt-4">
+        <p>&copy; 2025 Project Management System</p>
+    </footer>
+
+    <script>
+        let projects = [];
+
+        async function fetchProjects() {
+            try {
+                const response = await fetch("/projects");
+                projects = await response.json();
+                let tableHTML = "";
+                
+                projects.forEach(project => {
+                    tableHTML += `<tr>
+                        <td>${project.id}</td>
+                        <td>${project.name}</td>
+                        <td>${project.description}</td>
+                        <td>${project.status}</td>
+                        <td><button class='btn btn-danger btn-sm' onclick="deleteProject(${project.id})">Delete</button></td>
+                    </tr>`;
+                });
+
+                document.getElementById("projectTable").innerHTML = tableHTML;
+            } catch (error) {
+                console.error("Error fetching projects:", error);
+            }
+        }
+
+        async function deleteProject(id) {
+            await fetch(`/projects/${id}`, { method: "DELETE" });
+            fetchProjects();
+        }
+
+        document.getElementById("projectForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const name = document.getElementById("name").value;
+            const description = document.getElementById("description").value;
+            const status = document.getElementById("status").value;
+
+            await fetch("/projects", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, description, status })
+            });
+
+            fetchProjects();
+        });
+
+        async function initializeDashboard() {
+            await fetchProjects();
+        }
+
+        initializeDashboard();
+    </script>
+</body>
+</html>
